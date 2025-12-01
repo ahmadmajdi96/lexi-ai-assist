@@ -12,13 +12,28 @@ export const AdminSettings = () => {
   const { data: jurisdictions } = useJurisdictions();
   const updateSetting = useUpdateSystemSetting();
 
-  const getSetting = (key: string): string => {
+  const getSetting = (key: string): any => {
     const setting = settings?.find((s: any) => s.key === key);
-    return String(setting?.value ?? "");
+    return setting?.value ?? null;
   };
 
-  const handleToggle = (key: string, currentValue: string) => {
-    const newValue = currentValue === "true" ? "false" : "true";
+  const getFileTypes = (): string[] => {
+    const value = getSetting("allowed_file_types");
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // If not valid JSON, try to extract words
+        return value.replace(/[\[\]]/g, "").split(/[,\s]+/).filter(Boolean);
+      }
+    }
+    return ["pdf", "doc", "docx", "txt"];
+  };
+
+  const handleToggle = (key: string, currentValue: any) => {
+    const newValue = currentValue === true || currentValue === "true" ? false : true;
     updateSetting.mutate({ key, value: newValue });
   };
 
@@ -64,8 +79,8 @@ export const AdminSettings = () => {
               <p className="text-xs text-muted-foreground">Enable AI-powered features across the platform</p>
             </div>
             <Switch
-              checked={getSetting("ai_enabled") === "true"}
-              onCheckedChange={() => handleToggle("ai_enabled", getSetting("ai_enabled") || "true")}
+              checked={getSetting("ai_enabled") === true || getSetting("ai_enabled") === "true"}
+              onCheckedChange={() => handleToggle("ai_enabled", getSetting("ai_enabled"))}
             />
           </div>
 
@@ -74,7 +89,7 @@ export const AdminSettings = () => {
             <Label>Max File Upload Size (MB)</Label>
             <Input
               type="number"
-              value={getSetting("max_file_size_mb") || "10"}
+              value={String(getSetting("max_file_size_mb") ?? "10")}
               className="mt-2"
               disabled
             />
@@ -88,7 +103,7 @@ export const AdminSettings = () => {
             <Label>Allowed File Types</Label>
             <div className="mt-2 p-3 rounded-lg bg-muted/50">
               <div className="flex flex-wrap gap-2">
-                {JSON.parse(getSetting("allowed_file_types") || '["pdf","doc","docx","txt"]').map((type: string) => (
+                {getFileTypes().map((type: string) => (
                   <span key={type} className="px-2 py-1 rounded bg-background text-xs font-mono">
                     .{type}
                   </span>
