@@ -1,25 +1,29 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   FileText, 
   MessageSquare, 
   ArrowRight,
-  Plus,
   Bell,
   Settings,
   LogOut,
   Scale,
   HelpCircle,
-  Upload,
-  Loader2
+  Loader2,
+  Check,
+  ShoppingBag,
+  FolderOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePurchases } from "@/hooks/usePurchases";
+import { useServices } from "@/hooks/useServices";
 import { useToast } from "@/hooks/use-toast";
+import { ServicePurchaseModal } from "@/components/services/ServicePurchaseModal";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -56,7 +60,9 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const { user, isLoading: authLoading, signOut } = useAuth();
   const { data: purchases, isLoading: purchasesLoading } = usePurchases();
+  const { data: services, isLoading: servicesLoading } = useServices();
   const { toast } = useToast();
+  const [selectedService, setSelectedService] = useState<typeof services[0] | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -133,177 +139,248 @@ const Dashboard = () => {
           className="mb-8"
         >
           <h1 className="font-display text-3xl font-bold mb-2">Welcome back, {firstName}</h1>
-          <p className="text-muted-foreground">Here's an overview of your legal matters.</p>
+          <p className="text-muted-foreground">Manage your legal services and browse new offerings.</p>
         </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-        >
-          <Button variant="gold" className="h-auto py-4 flex flex-col items-center gap-2" asChild>
-            <Link to="/services">
-              <Plus className="w-5 h-5" />
-              <span>New Service</span>
-            </Link>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="h-auto py-4 flex flex-col items-center gap-2"
-            onClick={() => {
-              // Open the AI chat widget by dispatching a custom event
-              window.dispatchEvent(new CustomEvent('openAIChat'));
-            }}
-          >
-            <MessageSquare className="w-5 h-5" />
-            <span>AI Assistant</span>
-          </Button>
-          <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" asChild>
-            <Link to="/contact">
-              <Upload className="w-5 h-5" />
-              <span>Contact Support</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" asChild>
-            <Link to="/faqs">
-              <HelpCircle className="w-5 h-5" />
-              <span>Get Help</span>
-            </Link>
-          </Button>
-        </motion.div>
+        {/* Main Content with Tabs */}
+        <Tabs defaultValue="my-services" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="my-services" className="flex items-center gap-2">
+              <FolderOpen className="w-4 h-4" />
+              My Services
+            </TabsTrigger>
+            <TabsTrigger value="browse" className="flex items-center gap-2">
+              <ShoppingBag className="w-4 h-4" />
+              Browse Services
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Active Services */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-2"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xl font-semibold">Your Services</h2>
-              <Link to="/services" className="text-sm text-accent hover:underline flex items-center gap-1">
-                Browse Services <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+          {/* My Services Tab */}
+          <TabsContent value="my-services">
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Active Services */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="lg:col-span-2"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-display text-xl font-semibold">Your Services</h2>
+                </div>
 
-            {purchasesLoading ? (
-              <div className="glass-card rounded-2xl p-12 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-accent" />
-              </div>
-            ) : purchases && purchases.length > 0 ? (
-              <div className="space-y-4">
-                {purchases.map((purchase) => (
-                  <div key={purchase.id} className="glass-card rounded-2xl p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-semibold mb-1">{purchase.service?.name || "Service"}</h3>
-                        <Badge className={statusColors[purchase.status]}>
-                          {statusLabels[purchase.status] || purchase.status}
-                        </Badge>
+                {purchasesLoading ? (
+                  <div className="glass-card rounded-2xl p-12 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-accent" />
+                  </div>
+                ) : purchases && purchases.length > 0 ? (
+                  <div className="space-y-4">
+                    {purchases.map((purchase) => (
+                      <div key={purchase.id} className="glass-card rounded-2xl p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="font-semibold mb-1">{purchase.service?.name || "Service"}</h3>
+                            <Badge className={statusColors[purchase.status]}>
+                              {statusLabels[purchase.status] || purchase.status}
+                            </Badge>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(purchase.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between text-sm mb-2">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className="font-medium">{statusProgress[purchase.status]}%</span>
+                          </div>
+                          <Progress value={statusProgress[purchase.status]} className="h-2" />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            {purchase.amount_paid
+                              ? `Paid: $${(purchase.amount_paid / 100).toFixed(2)}`
+                              : "Payment pending"}
+                          </span>
+                          <Button 
+                            variant="navy" 
+                            size="sm"
+                            onClick={() => navigate(`/purchase/${purchase.id}`)}
+                          >
+                            View Details <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(purchase.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="glass-card rounded-2xl p-12 text-center">
+                    <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold mb-2">No services yet</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Get started by purchasing your first legal service.
+                    </p>
+                    <Button 
+                      variant="gold"
+                      onClick={() => {
+                        const tabsList = document.querySelector('[value="browse"]') as HTMLButtonElement;
+                        tabsList?.click();
+                      }}
+                    >
+                      Browse Services
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
 
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{statusProgress[purchase.status]}%</span>
-                      </div>
-                      <Progress value={statusProgress[purchase.status]} className="h-2" />
+              {/* Right Sidebar */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="space-y-6"
+              >
+                {/* AI Assistant Card */}
+                <div className="glass-card rounded-2xl p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 flex items-center justify-center">
+                      <MessageSquare className="w-5 h-5 text-slate-900" />
                     </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        {purchase.amount_paid
-                          ? `Paid: $${(purchase.amount_paid / 100).toFixed(2)}`
-                          : "Payment pending"}
-                      </span>
-                      <Button 
-                        variant="navy" 
-                        size="sm"
-                        onClick={() => navigate(`/purchase/${purchase.id}`)}
-                      >
-                        View Details <ArrowRight className="w-4 h-4" />
-                      </Button>
+                    <div>
+                      <h3 className="font-semibold">AI Legal Assistant</h3>
+                      <p className="text-xs text-muted-foreground">Ask questions anytime</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="glass-card rounded-2xl p-12 text-center">
-                <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2">No services yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Get started by purchasing your first legal service.
-                </p>
-                <Button variant="gold" asChild>
-                  <Link to="/services">Browse Services</Link>
-                </Button>
-              </div>
-            )}
-          </motion.div>
-
-          {/* Right Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="space-y-6"
-          >
-            {/* AI Assistant Card */}
-            <div className="glass-card rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-slate-900" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Get instant answers to your legal questions from our AI assistant.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => window.dispatchEvent(new CustomEvent('openAIChat'))}
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Open Chat
+                  </Button>
                 </div>
-                <div>
-                  <h3 className="font-semibold">AI Legal Assistant</h3>
-                  <p className="text-xs text-muted-foreground">Ask questions anytime</p>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Get instant answers to your legal questions from our AI assistant.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Look for the chat icon in the bottom right corner of any page.
-              </p>
-            </div>
 
-            {/* Quick Links */}
-            <div className="glass-card rounded-2xl p-6">
-              <h3 className="font-semibold mb-4">Quick Links</h3>
-              <div className="space-y-2">
-                <Link
-                  to="/services"
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <FileText className="w-5 h-5 text-accent" />
-                  <span className="text-sm">All Services</span>
-                </Link>
-                <Link
-                  to="/how-it-works"
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <HelpCircle className="w-5 h-5 text-accent" />
-                  <span className="text-sm">How It Works</span>
-                </Link>
-                <Link
-                  to="/contact"
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <MessageSquare className="w-5 h-5 text-accent" />
-                  <span className="text-sm">Contact Support</span>
-                </Link>
-              </div>
+                {/* Quick Links */}
+                <div className="glass-card rounded-2xl p-6">
+                  <h3 className="font-semibold mb-4">Quick Links</h3>
+                  <div className="space-y-2">
+                    <Link
+                      to="/how-it-works"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <HelpCircle className="w-5 h-5 text-accent" />
+                      <span className="text-sm">How It Works</span>
+                    </Link>
+                    <Link
+                      to="/contact"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <MessageSquare className="w-5 h-5 text-accent" />
+                      <span className="text-sm">Contact Support</span>
+                    </Link>
+                    <Link
+                      to="/faqs"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <FileText className="w-5 h-5 text-accent" />
+                      <span className="text-sm">FAQs</span>
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-        </div>
+          </TabsContent>
+
+          {/* Browse Services Tab */}
+          <TabsContent value="browse">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="mb-6">
+                <h2 className="font-display text-xl font-semibold mb-2">Available Services</h2>
+                <p className="text-muted-foreground">Select a service to purchase. Click on any service to see details and proceed to checkout.</p>
+              </div>
+
+              {servicesLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 animate-spin text-accent" />
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {services?.map((service) => (
+                    <motion.div
+                      key={service.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      whileHover={{ scale: 1.02 }}
+                      className="cursor-pointer"
+                      onClick={() => setSelectedService(service)}
+                    >
+                      <div className="h-full glass-card rounded-2xl p-6 hover:shadow-lg transition-all relative border-2 border-transparent hover:border-accent/30">
+                        {service.is_popular && (
+                          <Badge className="absolute -top-3 right-6 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-900 border-0">
+                            Popular
+                          </Badge>
+                        )}
+
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 flex items-center justify-center">
+                            <FileText className="w-6 h-6 text-slate-900" />
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {service.turnaround_days} {service.turnaround_days === 1 ? "day" : "days"}
+                          </span>
+                        </div>
+
+                        <h3 className="font-display text-lg font-semibold mb-2">
+                          {service.name}
+                        </h3>
+                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                          {service.description}
+                        </p>
+
+                        {/* Features Preview */}
+                        <ul className="space-y-1 mb-4">
+                          {service.features.slice(0, 3).map((feature) => (
+                            <li key={feature} className="flex items-center gap-2 text-xs">
+                              <Check className="w-3 h-3 text-accent" />
+                              <span className="text-muted-foreground truncate">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* Price */}
+                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                          <span className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 bg-clip-text text-transparent">
+                            ${(service.price / 100).toFixed(0)}
+                          </span>
+                          <Button variant="navy" size="sm">
+                            Select
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </TabsContent>
+        </Tabs>
       </main>
+
+      {/* Purchase Modal */}
+      <ServicePurchaseModal
+        service={selectedService}
+        isOpen={!!selectedService}
+        onClose={() => setSelectedService(null)}
+      />
     </div>
   );
 };
