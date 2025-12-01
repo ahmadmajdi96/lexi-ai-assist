@@ -146,13 +146,13 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={handleClose}
           />
 
@@ -161,17 +161,17 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-2xl md:w-full bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[90vh]"
+            className="relative w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col m-4"
           >
             {/* Header */}
             <div className="relative bg-gradient-to-r from-navy-900 to-navy-800 p-6 text-white shrink-0">
               <button
                 onClick={handleClose}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors z-10"
               >
                 <X className="w-5 h-5" />
               </button>
-              <div className="pr-8">
+              <div className="pr-10">
                 <span className="text-xs uppercase tracking-wider text-gold-400 font-medium">
                   {service.category?.name || "Legal Service"}
                 </span>
@@ -203,7 +203,7 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
               </AnimatePresence>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
