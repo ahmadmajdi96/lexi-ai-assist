@@ -60,7 +60,7 @@ export function CartSheet() {
       const { url } = await response.json();
       clearCart();
       setIsOpen(false);
-      window.location.href = url;
+      window.open(url, "_blank");
     } catch (error) {
       toast({
         title: "Checkout Error",
