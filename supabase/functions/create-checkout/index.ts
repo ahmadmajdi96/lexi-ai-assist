@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface CartItem {
+  serviceId: string;
+  serviceName: string;
+  price: number;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -22,23 +28,25 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get the authorization header to identify the user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("No authorization header");
     }
 
-    // Verify the user
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
       throw new Error("Invalid user token");
     }
 
-    const { serviceId, serviceName, price, successUrl, cancelUrl } = await req.json();
-    console.log("Creating checkout for:", { serviceId, serviceName, price, userId: user.id });
+    const { items, successUrl, cancelUrl } = await req.json() as {
+      items: CartItem[];
+      successUrl: string;
+      cancelUrl: string;
+    };
 
-    // Initialize Stripe with latest API version
+    console.log("Creating checkout for cart:", { items, userId: user.id });
+
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
@@ -62,51 +70,53 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create checkout session with price_data for dynamic pricing
+    // Create line items for all services in cart
+    const lineItems = items.map((item) => ({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: item.serviceName,
+          description: `Legal service: ${item.serviceName}`,
+        },
+        unit_amount: item.price,
+      },
+      quantity: 1,
+    }));
+
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: serviceName,
-              description: `Legal service: ${serviceName}`,
-            },
-            unit_amount: price,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
-        service_id: serviceId,
         user_id: user.id,
+        service_ids: items.map((i) => i.serviceId).join(","),
       },
     });
 
     console.log("Checkout session created:", session.id);
 
-    // Create a pending purchase record
-    const { data: purchase, error: purchaseError } = await supabase
-      .from("purchases")
-      .insert({
+    // Create purchase records for each item
+    const purchasePromises = items.map((item) =>
+      supabase.from("purchases").insert({
         user_id: user.id,
-        service_id: serviceId,
+        service_id: item.serviceId,
         status: "draft",
         stripe_checkout_session_id: session.id,
-        amount_paid: price,
+        amount_paid: item.price,
       })
-      .select()
-      .single();
+    );
 
-    if (purchaseError) {
-      console.error("Error creating purchase:", purchaseError);
-    } else {
-      console.log("Purchase record created:", purchase.id);
-    }
+    const results = await Promise.all(purchasePromises);
+    results.forEach((result, index) => {
+      if (result.error) {
+        console.error(`Error creating purchase for ${items[index].serviceName}:`, result.error);
+      } else {
+        console.log(`Purchase record created for ${items[index].serviceName}`);
+      }
+    });
 
     return new Response(
       JSON.stringify({ url: session.url, sessionId: session.id }),
