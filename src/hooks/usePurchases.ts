@@ -50,10 +50,12 @@ export function useCreateCheckout() {
       serviceId,
       serviceName,
       price,
+      intakeData,
     }: {
       serviceId: string;
       serviceName: string;
       price: number;
+      intakeData?: Record<string, unknown>;
     }) => {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
@@ -67,6 +69,7 @@ export function useCreateCheckout() {
             serviceId,
             serviceName,
             price,
+            intakeData,
             successUrl: `${window.location.origin}/payment-success`,
             cancelUrl: `${window.location.origin}/services?payment=cancelled`,
           }),
