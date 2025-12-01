@@ -11,11 +11,11 @@ import { Switch } from "@/components/ui/switch";
 import { useAIConfigurations, useUpdateAIConfiguration } from "@/hooks/useAdmin";
 
 const availableModels = [
-  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "lovable", description: "Fast and balanced" },
-  { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "lovable", description: "Best for complex reasoning" },
-  { id: "google/gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", provider: "lovable", description: "Fastest, most cost-effective" },
-  { id: "openai/gpt-5", name: "GPT-5", provider: "lovable", description: "Powerful all-rounder" },
-  { id: "openai/gpt-5-mini", name: "GPT-5 Mini", provider: "lovable", description: "Cost-efficient GPT" },
+  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "google", description: "Fast and balanced" },
+  { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "google", description: "Best for complex reasoning" },
+  { id: "google/gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", provider: "google", description: "Fastest, most cost-effective" },
+  { id: "openai/gpt-5", name: "GPT-5", provider: "openai", description: "Powerful all-rounder" },
+  { id: "openai/gpt-5-mini", name: "GPT-5 Mini", provider: "openai", description: "Cost-efficient GPT" },
 ];
 
 export const AdminAIConfig = () => {
