@@ -67,7 +67,7 @@ export function useCreateCheckout() {
             serviceId,
             serviceName,
             price,
-            successUrl: `${window.location.origin}/dashboard?payment=success`,
+            successUrl: `${window.location.origin}/payment-success`,
             cancelUrl: `${window.location.origin}/services?payment=cancelled`,
           }),
         }
