@@ -104,10 +104,16 @@ const Dashboard = () => {
             </Link>
 
             <div className="flex items-center gap-4">
-              <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+              <button 
+                className="relative p-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => toast({ title: "Notifications", description: "No new notifications" })}
+              >
                 <Bell className="w-5 h-5 text-muted-foreground" />
               </button>
-              <button className="p-2 rounded-lg hover:bg-muted transition-colors">
+              <button 
+                className="p-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => toast({ title: "Settings", description: "Settings page coming soon!" })}
+              >
                 <Settings className="w-5 h-5 text-muted-foreground" />
               </button>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
@@ -143,17 +149,28 @@ const Dashboard = () => {
               <span>New Service</span>
             </Link>
           </Button>
-          <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="h-auto py-4 flex flex-col items-center gap-2"
+            onClick={() => {
+              // Open the AI chat widget by dispatching a custom event
+              window.dispatchEvent(new CustomEvent('openAIChat'));
+            }}
+          >
             <MessageSquare className="w-5 h-5" />
             <span>AI Assistant</span>
           </Button>
-          <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
-            <Upload className="w-5 h-5" />
-            <span>Upload Document</span>
+          <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" asChild>
+            <Link to="/contact">
+              <Upload className="w-5 h-5" />
+              <span>Contact Support</span>
+            </Link>
           </Button>
-          <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
-            <HelpCircle className="w-5 h-5" />
-            <span>Get Help</span>
+          <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" asChild>
+            <Link to="/faqs">
+              <HelpCircle className="w-5 h-5" />
+              <span>Get Help</span>
+            </Link>
           </Button>
         </motion.div>
 
@@ -206,7 +223,14 @@ const Dashboard = () => {
                           ? `Paid: $${(purchase.amount_paid / 100).toFixed(2)}`
                           : "Payment pending"}
                       </span>
-                      <Button variant="navy" size="sm">
+                      <Button 
+                        variant="navy" 
+                        size="sm"
+                        onClick={() => toast({
+                          title: purchase.service?.name || "Service",
+                          description: `Status: ${statusLabels[purchase.status] || purchase.status}. Detailed view coming soon!`,
+                        })}
+                      >
                         View Details <ArrowRight className="w-4 h-4" />
                       </Button>
                     </div>

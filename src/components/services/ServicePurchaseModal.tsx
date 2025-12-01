@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, ArrowRight, Loader2, CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ interface ServicePurchaseModalProps {
 export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurchaseModalProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const createCheckout = useCreateCheckout();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -39,8 +41,9 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
       toast({
         title: "Sign in required",
         description: "Please sign in or create an account to purchase services.",
-        variant: "destructive",
       });
+      onClose();
+      navigate("/login");
       return;
     }
 
