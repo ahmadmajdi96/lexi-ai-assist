@@ -22,6 +22,7 @@ import { useServices, useServiceCategories } from "@/hooks/useServices";
 import { useCreateCheckout } from "@/hooks/usePurchases";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { ServicePurchaseModal } from "@/components/services/ServicePurchaseModal";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileText,
@@ -43,6 +44,7 @@ const Services = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<typeof services[0] | null>(null);
 
   const filteredServices = services?.filter((service) => {
     const matchesCategory =
@@ -211,17 +213,10 @@ const Services = () => {
                         <Button
                           variant="navy"
                           size="sm"
-                          onClick={() => handlePurchase(service)}
-                          disabled={purchasingId === service.id}
+                          onClick={() => setSelectedService(service)}
                         >
-                          {purchasingId === service.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <>
-                              Get Started
-                              <ArrowRight className="w-4 h-4" />
-                            </>
-                          )}
+                          Get Started
+                          <ArrowRight className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -238,6 +233,13 @@ const Services = () => {
           )}
         </div>
       </section>
+
+      {/* Purchase Modal */}
+      <ServicePurchaseModal
+        service={selectedService}
+        isOpen={!!selectedService}
+        onClose={() => setSelectedService(null)}
+      />
     </Layout>
   );
 };
