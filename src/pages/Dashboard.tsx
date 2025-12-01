@@ -20,10 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import { usePurchases } from "@/hooks/usePurchases";
-import { useServices } from "@/hooks/useServices";
+import { useServices, Service } from "@/hooks/useServices";
 import { useToast } from "@/hooks/use-toast";
-import { ServicePurchaseModal } from "@/components/services/ServicePurchaseModal";
+import { CartSheet } from "@/components/cart/CartSheet";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -62,7 +63,24 @@ const Dashboard = () => {
   const { data: purchases, isLoading: purchasesLoading } = usePurchases();
   const { data: services, isLoading: servicesLoading } = useServices();
   const { toast } = useToast();
-  const [selectedService, setSelectedService] = useState<typeof services[0] | null>(null);
+  const { addItem, items } = useCart();
+
+  const isInCart = (serviceId: string) => items.some((item) => item.service.id === serviceId);
+
+  const handleAddToCart = (service: Service) => {
+    if (isInCart(service.id)) {
+      toast({
+        title: "Already in cart",
+        description: `${service.name} is already in your cart.`,
+      });
+      return;
+    }
+    addItem(service);
+    toast({
+      title: "Added to cart",
+      description: `${service.name} has been added to your cart.`,
+    });
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -110,6 +128,7 @@ const Dashboard = () => {
             </Link>
 
             <div className="flex items-center gap-4">
+              <CartSheet />
               <button 
                 className="relative p-2 rounded-lg hover:bg-muted transition-colors"
                 onClick={() => toast({ title: "Notifications", description: "No new notifications" })}
@@ -320,7 +339,7 @@ const Dashboard = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       whileHover={{ scale: 1.02 }}
                       className="cursor-pointer"
-                      onClick={() => setSelectedService(service)}
+                      onClick={() => handleAddToCart(service)}
                     >
                       <div className="h-full glass-card rounded-2xl p-6 hover:shadow-lg transition-all relative border-2 border-transparent hover:border-accent/30">
                         {service.is_popular && (
@@ -360,9 +379,21 @@ const Dashboard = () => {
                           <span className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 bg-clip-text text-transparent">
                             ${(service.price / 100).toFixed(0)}
                           </span>
-                          <Button variant="navy" size="sm">
-                            Select
-                            <ArrowRight className="w-4 h-4" />
+                          <Button 
+                            variant={isInCart(service.id) ? "outline" : "navy"} 
+                            size="sm"
+                          >
+                            {isInCart(service.id) ? (
+                              <>
+                                <Check className="w-4 h-4" />
+                                In Cart
+                              </>
+                            ) : (
+                              <>
+                                Add to Cart
+                                <ShoppingBag className="w-4 h-4" />
+                              </>
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -375,12 +406,6 @@ const Dashboard = () => {
         </Tabs>
       </main>
 
-      {/* Purchase Modal */}
-      <ServicePurchaseModal
-        service={selectedService}
-        isOpen={!!selectedService}
-        onClose={() => setSelectedService(null)}
-      />
     </div>
   );
 };
