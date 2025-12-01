@@ -11,11 +11,11 @@ import { Switch } from "@/components/ui/switch";
 import { useAIConfigurations, useUpdateAIConfiguration } from "@/hooks/useAdmin";
 
 const availableModels = [
-  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "google", description: "Fast and balanced" },
-  { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "google", description: "Best for complex reasoning" },
-  { id: "google/gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", provider: "google", description: "Fastest, most cost-effective" },
-  { id: "openai/gpt-5", name: "GPT-5", provider: "openai", description: "Powerful all-rounder" },
-  { id: "openai/gpt-5-mini", name: "GPT-5 Mini", provider: "openai", description: "Cost-efficient GPT" },
+  { id: "cortanex/nexus-4.2-turbo", name: "Cortanex Nexus 4.2 Turbo", provider: "Cortanex AI", description: "Fast and balanced" },
+  { id: "cortanex/nexus-4.2-pro", name: "Cortanex Nexus 4.2 Pro", provider: "Cortanex AI", description: "Best for complex reasoning" },
+  { id: "cortanex/nexus-4.2-lite", name: "Cortanex Nexus 4.2 Lite", provider: "Cortanex AI", description: "Fastest, most cost-effective" },
+  { id: "cortanex/apex-5.0", name: "Cortanex Apex 5.0", provider: "Cortanex AI", description: "Powerful all-rounder" },
+  { id: "cortanex/apex-5.0-mini", name: "Cortanex Apex 5.0 Mini", provider: "Cortanex AI", description: "Cost-efficient model" },
 ];
 
 export const AdminAIConfig = () => {
@@ -266,11 +266,11 @@ export const AdminAIConfig = () => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Model:</span>
-                <span className="font-mono">{currentConfig?.model_name}</span>
+                <span className="font-mono">{availableModels.find(m => m.id === currentConfig?.model_name)?.name || currentConfig?.model_name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Provider:</span>
-                <span>{currentConfig?.model_provider}</span>
+                <span>Cortanex AI</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Temperature:</span>
