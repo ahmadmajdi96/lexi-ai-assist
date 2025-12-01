@@ -25,6 +25,7 @@ import { usePurchases } from "@/hooks/usePurchases";
 import { useServices, Service } from "@/hooks/useServices";
 import { useToast } from "@/hooks/use-toast";
 import { CartSheet } from "@/components/cart/CartSheet";
+import { useIsAdmin } from "@/hooks/useAdmin";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -64,6 +65,7 @@ const Dashboard = () => {
   const { data: services, isLoading: servicesLoading } = useServices();
   const { toast } = useToast();
   const { addItem, items } = useCart();
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
 
   const isInCart = (serviceId: string) => items.some((item) => item.service.id === serviceId);
 
@@ -88,6 +90,13 @@ const Dashboard = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Redirect admin users to admin dashboard
+  useEffect(() => {
+    if (!adminLoading && isAdmin) {
+      navigate("/admin");
+    }
+  }, [isAdmin, adminLoading, navigate]);
+
   useEffect(() => {
     if (searchParams.get("payment") === "success") {
       toast({
@@ -102,7 +111,7 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  if (authLoading) {
+  if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-accent" />
