@@ -33,12 +33,14 @@ import { AdminDocuments } from "@/components/admin/AdminDocuments";
 import { AdminTemplates } from "@/components/admin/AdminTemplates";
 import { AdminAIConfig } from "@/components/admin/AdminAIConfig";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { AdminCompanyFiles } from "@/components/admin/AdminCompanyFiles";
 
 const navItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "users", label: "Users", icon: Users },
   { id: "services", label: "Services", icon: Scale },
   { id: "orders", label: "Orders", icon: ShoppingCart },
+  { id: "company-files", label: "Company Files", icon: FolderOpen },
   { id: "documents", label: "Documents", icon: FileText },
   { id: "templates", label: "Templates", icon: FolderOpen },
   { id: "ai-config", label: "AI Configuration", icon: Bot },
@@ -88,6 +90,8 @@ const AdminDashboard = () => {
         return <AdminServices />;
       case "orders":
         return <AdminOrders />;
+      case "company-files":
+        return <AdminCompanyFiles />;
       case "documents":
         return <AdminDocuments />;
       case "templates":

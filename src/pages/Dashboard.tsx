@@ -226,10 +226,7 @@ const Dashboard = () => {
                       <Button 
                         variant="navy" 
                         size="sm"
-                        onClick={() => toast({
-                          title: purchase.service?.name || "Service",
-                          description: `Status: ${statusLabels[purchase.status] || purchase.status}. Detailed view coming soon!`,
-                        })}
+                        onClick={() => navigate(`/purchase/${purchase.id}`)}
                       >
                         View Details <ArrowRight className="w-4 h-4" />
                       </Button>

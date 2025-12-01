@@ -153,6 +153,59 @@ export type Database = {
         }
         Relationships: []
       }
+      company_files: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          service_id: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          service_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          service_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_files_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
@@ -292,6 +345,41 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          purchase_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          purchase_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          purchase_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_messages_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       purchases: {
         Row: {
           ai_draft: string | null
@@ -383,6 +471,56 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      service_documents: {
+        Row: {
+          content: string | null
+          created_at: string
+          document_type: string
+          file_path: string | null
+          id: string
+          name: string
+          purchase_id: string
+          status: string | null
+          updated_at: string
+          user_id: string
+          version: number | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          document_type?: string
+          file_path?: string | null
+          id?: string
+          name: string
+          purchase_id: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          document_type?: string
+          file_path?: string | null
+          id?: string
+          name?: string
+          purchase_id?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_documents_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {

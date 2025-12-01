@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.86.0";
 
 const corsHeaders = {
@@ -38,9 +38,9 @@ serve(async (req) => {
     const { serviceId, serviceName, price, successUrl, cancelUrl } = await req.json();
     console.log("Creating checkout for:", { serviceId, serviceName, price, userId: user.id });
 
+    // Initialize Stripe with latest API version
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
-      httpClient: Stripe.createFetchHttpClient(),
+      apiVersion: "2025-08-27.basil",
     });
 
     // Check if customer exists
@@ -62,7 +62,7 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create checkout session
+    // Create checkout session with price_data for dynamic pricing
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
