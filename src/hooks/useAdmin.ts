@@ -129,13 +129,25 @@ export const useAllPurchases = () => {
         .from("purchases")
         .select(`
           *,
-          service:services(name, price),
-          profile:profiles!purchases_user_id_fkey(email, first_name, last_name)
+          service:services(name, price)
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Fetch profiles separately to avoid foreign key issues
+      const userIds = [...new Set(data?.map((p: any) => p.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, email, first_name, last_name")
+        .in("id", userIds);
+      
+      const profileMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
+      
+      return data?.map((purchase: any) => ({
+        ...purchase,
+        profile: profileMap.get(purchase.user_id) || null
+      }));
     },
   });
 };

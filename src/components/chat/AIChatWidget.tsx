@@ -30,6 +30,13 @@ export function AIChatWidget() {
     }
   }, [messages]);
 
+  // Listen for custom event to open chat
+  useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener('openAIChat', handleOpenChat);
+    return () => window.removeEventListener('openAIChat', handleOpenChat);
+  }, []);
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
