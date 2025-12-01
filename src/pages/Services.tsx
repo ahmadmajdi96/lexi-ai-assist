@@ -213,9 +213,19 @@ const Services = () => {
                         <Button
                           variant="navy"
                           size="sm"
-                          onClick={() => setSelectedService(service)}
+                          onClick={() => {
+                            if (!user) {
+                              toast({
+                                title: "Sign in required",
+                                description: "Please sign in or create an account to purchase services.",
+                              });
+                              navigate("/login");
+                              return;
+                            }
+                            setSelectedService(service);
+                          }}
                         >
-                          Get Started
+                          Get Service
                           <ArrowRight className="w-4 h-4" />
                         </Button>
                       </div>
