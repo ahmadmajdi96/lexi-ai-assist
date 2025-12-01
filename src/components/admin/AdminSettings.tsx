@@ -210,7 +210,7 @@ export const AdminSettings = () => {
           <div className="space-y-3">
             <div className="flex justify-between p-3 rounded-lg bg-muted/50">
               <span className="text-muted-foreground">Provider</span>
-              <span className="font-medium">Lovable Cloud</span>
+              <span className="font-medium">PostgreSQL (Supabase)</span>
             </div>
             <div className="flex justify-between p-3 rounded-lg bg-muted/50">
               <span className="text-muted-foreground">Status</span>
