@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Scale, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, signIn, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -19,21 +21,43 @@ const Login = () => {
     remember: false
   });
 
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate("/dashboard");
+    }
+  }, [user, authLoading, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const { error } = await signIn(formData.email, formData.password);
+
+    if (error) {
+      toast({
+        title: "Sign in failed",
+        description: error.message || "Invalid email or password",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
 
     toast({
       title: "Welcome back!",
       description: "You have successfully signed in.",
     });
 
-    setIsLoading(false);
     navigate("/dashboard");
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -46,8 +70,8 @@ const Login = () => {
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-gold rounded-xl flex items-center justify-center shadow-gold">
-              <Scale className="w-5 h-5 text-navy-dark" />
+            <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-400 rounded-xl flex items-center justify-center shadow-gold">
+              <Scale className="w-5 h-5 text-slate-900" />
             </div>
             <div className="flex flex-col">
               <span className="font-display text-xl font-bold">LexCounsel</span>
@@ -120,7 +144,7 @@ const Login = () => {
 
             <Button type="submit" variant="gold" className="w-full" disabled={isLoading}>
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-navy-dark/30 border-t-navy-dark rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin" />
               ) : (
                 <>
                   Sign In
