@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, ArrowRight, Loader2, CreditCard, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateCheckout } from "@/hooks/usePurchases";
 import { useToast } from "@/hooks/use-toast";
+import { IntakeProgressBar } from "./intake/IntakeProgressBar";
+import { ClientTypeStep } from "./intake/ClientTypeStep";
+import { IndividualInfoStep } from "./intake/IndividualInfoStep";
+import { BusinessInfoStep } from "./intake/BusinessInfoStep";
+import { LegalMatterStep } from "./intake/LegalMatterStep";
+import { ReviewStep } from "./intake/ReviewStep";
+import {
+  IntakeFormData,
+  initialIntakeFormData,
+} from "./intake/IntakeFormTypes";
 
 interface Service {
   id: string;
@@ -27,14 +36,24 @@ interface ServicePurchaseModalProps {
   onClose: () => void;
 }
 
+const STEPS = ["Client Type", "Details", "Legal Matter", "Review"];
+
 export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurchaseModalProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const createCheckout = useCreateCheckout();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<IntakeFormData>(initialIntakeFormData);
 
   if (!service) return null;
+
+  const handleClose = () => {
+    setCurrentStep(0);
+    setFormData(initialIntakeFormData);
+    onClose();
+  };
 
   const handlePurchase = async () => {
     if (!user) {
@@ -42,7 +61,7 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
         title: "Sign in required",
         description: "Please sign in or create an account to purchase services.",
       });
-      onClose();
+      handleClose();
       navigate("/login");
       return;
     }
@@ -54,6 +73,7 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
         serviceId: service.id,
         serviceName: service.name,
         price: service.price,
+        intakeData: formData as unknown as Record<string, unknown>,
       });
 
       if (result.url) {
@@ -69,6 +89,60 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
     }
   };
 
+  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
+  const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <ClientTypeStep
+            value={formData.clientType}
+            onChange={(type) => setFormData({ ...formData, clientType: type })}
+            onNext={nextStep}
+          />
+        );
+      case 1:
+        return formData.clientType === "individual" ? (
+          <IndividualInfoStep
+            data={formData.individual}
+            onChange={(data) => setFormData({ ...formData, individual: data })}
+            onNext={nextStep}
+            onBack={prevStep}
+          />
+        ) : (
+          <BusinessInfoStep
+            data={formData.business}
+            onChange={(data) => setFormData({ ...formData, business: data })}
+            onNext={nextStep}
+            onBack={prevStep}
+          />
+        );
+      case 2:
+        return (
+          <LegalMatterStep
+            data={formData.legalMatter}
+            onChange={(data) => setFormData({ ...formData, legalMatter: data })}
+            serviceName={service.name}
+            onNext={nextStep}
+            onBack={prevStep}
+          />
+        );
+      case 3:
+        return (
+          <ReviewStep
+            data={formData}
+            service={service}
+            onBack={prevStep}
+            onSubmit={handlePurchase}
+            isProcessing={isProcessing}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -79,7 +153,7 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
-            onClick={onClose}
+            onClick={handleClose}
           />
 
           {/* Modal */}
@@ -87,12 +161,12 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden"
+            className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-2xl md:w-full bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[90vh]"
           >
             {/* Header */}
-            <div className="relative bg-gradient-to-r from-navy-900 to-navy-800 p-6 text-white">
+            <div className="relative bg-gradient-to-r from-navy-900 to-navy-800 p-6 text-white shrink-0">
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -101,80 +175,32 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
                 <span className="text-xs uppercase tracking-wider text-gold-400 font-medium">
                   {service.category?.name || "Legal Service"}
                 </span>
-                <h2 className="font-display text-2xl font-bold mt-1">{service.name}</h2>
+                <h2 className="font-display text-xl md:text-2xl font-bold mt-1">{service.name}</h2>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mt-6 pb-4">
+                <IntakeProgressBar 
+                  currentStep={currentStep} 
+                  totalSteps={STEPS.length} 
+                  steps={STEPS}
+                />
               </div>
             </div>
 
             {/* Content */}
-            <div className="p-6 max-h-[60vh] overflow-y-auto">
-              <p className="text-muted-foreground mb-6">{service.description}</p>
-
-              {/* Features */}
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">What's Included:</h3>
-                <ul className="space-y-2">
-                  {service.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Turnaround */}
-              {service.turnaround_days && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                  <Shield className="w-4 h-4 text-accent" />
-                  <span>Estimated delivery: {service.turnaround_days} business days</span>
-                </div>
-              )}
-
-              {/* Trust badges */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                  <Shield className="w-5 h-5 text-accent" />
-                  <span className="text-xs">Secure Payment</span>
-                </div>
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                  <CreditCard className="w-5 h-5 text-accent" />
-                  <span className="text-xs">Money-back Guarantee</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-border p-6 bg-muted/30">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <span className="text-sm text-muted-foreground">Total Price</span>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 bg-clip-text text-transparent">
-                    ${(service.price / 100).toFixed(0)}
-                  </div>
-                </div>
-                <Button
-                  variant="gold"
-                  size="lg"
-                  onClick={handlePurchase}
-                  disabled={isProcessing}
-                  className="min-w-[160px]"
+            <div className="flex-1 overflow-y-auto p-6">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      Purchase Now
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-center text-muted-foreground">
-                By purchasing, you agree to our Terms of Service and Privacy Policy.
-              </p>
+                  {renderStep()}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </motion.div>
         </>

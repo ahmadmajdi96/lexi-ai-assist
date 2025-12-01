@@ -11,6 +11,22 @@ interface CartItem {
   serviceId: string;
   serviceName: string;
   price: number;
+  intakeData?: Record<string, unknown>;
+}
+
+interface SingleServiceRequest {
+  serviceId: string;
+  serviceName: string;
+  price: number;
+  intakeData?: Record<string, unknown>;
+  successUrl: string;
+  cancelUrl: string;
+}
+
+interface CartRequest {
+  items: CartItem[];
+  successUrl: string;
+  cancelUrl: string;
 }
 
 serve(async (req) => {
@@ -39,13 +55,33 @@ serve(async (req) => {
       throw new Error("Invalid user token");
     }
 
-    const { items, successUrl, cancelUrl } = await req.json() as {
-      items: CartItem[];
-      successUrl: string;
-      cancelUrl: string;
-    };
+    const body = await req.json();
+    
+    // Handle both single service and cart requests
+    let items: CartItem[];
+    let successUrl: string;
+    let cancelUrl: string;
 
-    console.log("Creating checkout for cart:", { items, userId: user.id });
+    if (body.items) {
+      // Cart request
+      const cartRequest = body as CartRequest;
+      items = cartRequest.items;
+      successUrl = cartRequest.successUrl;
+      cancelUrl = cartRequest.cancelUrl;
+    } else {
+      // Single service request
+      const singleRequest = body as SingleServiceRequest;
+      items = [{
+        serviceId: singleRequest.serviceId,
+        serviceName: singleRequest.serviceName,
+        price: singleRequest.price,
+        intakeData: singleRequest.intakeData,
+      }];
+      successUrl = singleRequest.successUrl;
+      cancelUrl = singleRequest.cancelUrl;
+    }
+
+    console.log("Creating checkout for:", { itemCount: items.length, userId: user.id });
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
@@ -70,7 +106,7 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create line items for all services in cart
+    // Create line items for all services
     const lineItems = items.map((item) => ({
       price_data: {
         currency: "usd",
@@ -98,7 +134,7 @@ serve(async (req) => {
 
     console.log("Checkout session created:", session.id);
 
-    // Create purchase records for each item
+    // Create purchase records for each item with intake data
     const purchasePromises = items.map((item) =>
       supabase.from("purchases").insert({
         user_id: user.id,
@@ -106,6 +142,7 @@ serve(async (req) => {
         status: "draft",
         stripe_checkout_session_id: session.id,
         amount_paid: item.price,
+        intake_data: item.intakeData || null,
       })
     );
 
@@ -114,7 +151,7 @@ serve(async (req) => {
       if (result.error) {
         console.error(`Error creating purchase for ${items[index].serviceName}:`, result.error);
       } else {
-        console.log(`Purchase record created for ${items[index].serviceName}`);
+        console.log(`Purchase record created for ${items[index].serviceName} with intake data`);
       }
     });
 
