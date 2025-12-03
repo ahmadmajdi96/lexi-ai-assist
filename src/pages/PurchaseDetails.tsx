@@ -7,11 +7,12 @@ import {
   MessageSquare,
   Send,
   Clock,
-  CheckCircle,
   AlertCircle,
   Download,
   Scale,
   Loader2,
+  Eye,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,9 @@ import {
   useSendPurchaseMessage,
 } from "@/hooks/usePurchaseDetails";
 import { supabase } from "@/integrations/supabase/client";
+import { AIChatMessage } from "@/components/shared/AIChatMessage";
+import { DocumentViewerDialog } from "@/components/shared/DocumentViewerDialog";
+import { MarkdownRenderer } from "@/components/shared/MarkdownRenderer";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -71,6 +75,7 @@ const PurchaseDetails = () => {
 
   const [chatInput, setChatInput] = useState("");
   const [isAiResponding, setIsAiResponding] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<any>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -255,76 +260,84 @@ const PurchaseDetails = () => {
               ) : documents && documents.length > 0 ? (
                 <div className="space-y-4">
                   {documents.map((doc) => (
-                    <div
+                    <motion.div
                       key={doc.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/50 hover:border-accent/30 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                          <FileText className="w-6 h-6 text-accent" />
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-400 flex items-center justify-center shadow-md">
+                          <FileText className="w-6 h-6 text-slate-900" />
                         </div>
                         <div>
                           <p className="font-medium">{doc.name}</p>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                             <Badge
                               variant="outline"
-                              className={
+                              className={`text-xs ${
                                 doc.status === "approved"
-                                  ? "border-green-500 text-green-600"
+                                  ? "border-green-500 text-green-600 bg-green-500/10"
                                   : ""
-                              }
+                              }`}
                             >
                               {doc.status}
                             </Badge>
-                            <span>v{doc.version}</span>
+                            <span className="text-xs">v{doc.version}</span>
                             <span>•</span>
-                            <span>
+                            <span className="text-xs">
                               {new Date(doc.created_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
                       </div>
-                      {doc.status === "approved" && (
-                        doc.file_path ? (
-                          <Button variant="gold" size="sm" asChild>
-                            <a href={doc.file_path} target="_blank" rel="noopener noreferrer" download>
+                      <div className="flex gap-2">
+                        {(doc.content || doc.file_path) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setViewingDocument(doc)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View
+                          </Button>
+                        )}
+                        {doc.status === "approved" && (
+                          doc.file_path ? (
+                            <Button variant="gold" size="sm" asChild>
+                              <a href={doc.file_path} target="_blank" rel="noopener noreferrer" download>
+                                <Download className="w-4 h-4 mr-2" />
+                                Download
+                              </a>
+                            </Button>
+                          ) : doc.content ? (
+                            <Button 
+                              variant="gold" 
+                              size="sm"
+                              onClick={() => {
+                                const blob = new Blob([doc.content || ''], { type: 'text/plain' });
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `${doc.name}.txt`;
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                              }}
+                            >
                               <Download className="w-4 h-4 mr-2" />
                               Download
-                            </a>
-                          </Button>
-                        ) : doc.content ? (
-                          <Button 
-                            variant="gold" 
-                            size="sm"
-                            onClick={() => {
-                              const blob = new Blob([doc.content || ''], { type: 'text/plain' });
-                              const url = window.URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `${doc.name}.txt`;
-                              a.click();
-                              window.URL.revokeObjectURL(url);
-                            }}
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </Button>
-                        ) : (
-                          <Button variant="outline" size="sm" disabled>
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </Button>
-                        )
-                      )}
-                      {doc.status !== "approved" && (
-                        <Badge variant="outline">Pending Review</Badge>
-                      )}
-                    </div>
+                            </Button>
+                          ) : null
+                        )}
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+                    <Clock className="w-8 h-8 text-muted-foreground" />
+                  </div>
                   <h3 className="font-semibold mb-2">Documents in Progress</h3>
                   <p className="text-sm text-muted-foreground">
                     Your documents will appear here once generated. This usually
@@ -334,14 +347,19 @@ const PurchaseDetails = () => {
               )}
 
               {/* AI Draft Preview */}
-              {purchase.ai_draft && (
+              {purchase.ai_draft && purchase.status === "client_review" && (
                 <div className="mt-6 pt-6 border-t border-border">
-                  <h3 className="font-semibold mb-4">AI Draft Preview</h3>
-                  <div className="p-4 rounded-xl bg-muted/50 max-h-96 overflow-auto">
-                    <pre className="whitespace-pre-wrap text-sm">
-                      {purchase.ai_draft}
-                    </pre>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-400 flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-slate-900" />
+                    </div>
+                    <h3 className="font-semibold">Document Ready for Review</h3>
                   </div>
+                  <ScrollArea className="h-96">
+                    <div className="p-6 rounded-xl bg-white dark:bg-slate-900 border shadow-sm">
+                      <MarkdownRenderer content={purchase.ai_draft} />
+                    </div>
+                  </ScrollArea>
                 </div>
               )}
             </motion.div>
@@ -354,7 +372,7 @@ const PurchaseDetails = () => {
               animate={{ opacity: 1, y: 0 }}
               className="glass-card rounded-2xl overflow-hidden"
             >
-              <div className="p-4 border-b border-border">
+              <div className="p-4 border-b border-border bg-gradient-to-r from-muted/50 to-background">
                 <h2 className="font-display text-xl font-semibold">
                   Service Chat
                 </h2>
@@ -363,57 +381,44 @@ const PurchaseDetails = () => {
                 </p>
               </div>
 
-              <ScrollArea className="h-[400px] p-4">
-                {messagesLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="w-8 h-8 animate-spin text-accent" />
-                  </div>
-                ) : messages && messages.length > 0 ? (
-                  <div className="space-y-4">
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`flex ${
-                          msg.role === "user" ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                            msg.role === "user"
-                              ? "bg-accent text-accent-foreground"
-                              : "bg-muted"
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap">
-                            {msg.content}
-                          </p>
-                          <span className="text-xs opacity-70 mt-1 block">
-                            {new Date(msg.created_at).toLocaleTimeString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                    {isAiResponding && (
-                      <div className="flex justify-start">
-                        <div className="bg-muted rounded-2xl px-4 py-3">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        </div>
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-center">
-                    <div>
-                      <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="font-semibold mb-2">Start a Conversation</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Ask questions about your service, contract details, or get
-                        legal guidance.
-                      </p>
+              <ScrollArea className="h-[400px]">
+                <div className="p-4">
+                  {messagesLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 className="w-8 h-8 animate-spin text-accent" />
                     </div>
-                  </div>
-                )}
+                  ) : messages && messages.length > 0 ? (
+                    <div className="space-y-4">
+                      {messages.map((msg) => (
+                        <AIChatMessage
+                          key={msg.id}
+                          role={msg.role as "user" | "assistant"}
+                          content={msg.content}
+                          timestamp={msg.created_at}
+                        />
+                      ))}
+                      {isAiResponding && (
+                        <div className="flex gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-yellow-400 flex items-center justify-center">
+                            <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
+                          </div>
+                        </div>
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-center">
+                      <div>
+                        <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="font-semibold mb-2">Start a Conversation</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Ask questions about your service, contract details, or get
+                          legal guidance.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </ScrollArea>
 
               <div className="p-4 border-t border-border">
@@ -444,6 +449,13 @@ const PurchaseDetails = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Document Viewer Dialog */}
+      <DocumentViewerDialog
+        isOpen={!!viewingDocument}
+        onClose={() => setViewingDocument(null)}
+        document={viewingDocument}
+      />
     </div>
   );
 };
