@@ -106,16 +106,30 @@ export const useAllUsers = () => {
   return useQuery({
     queryKey: ["all-users"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select(`
-          *,
-          user_roles (role)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (profilesError) throw profilesError;
+
+      // Fetch user roles separately
+      const userIds = profiles?.map((p) => p.id) || [];
+      const { data: roles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", userIds);
+
+      if (rolesError) throw rolesError;
+
+      // Map roles to profiles
+      const roleMap = new Map(roles?.map((r) => [r.user_id, r]) || []);
+      
+      return profiles?.map((profile) => ({
+        ...profile,
+        user_roles: roleMap.get(profile.id) ? [roleMap.get(profile.id)] : [],
+      }));
     },
   });
 };
