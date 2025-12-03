@@ -261,22 +261,21 @@ export const ReviewStep = ({ data, service, onBack, onSubmit, isProcessing }: Re
 
       {/* Navigation Buttons */}
       <div className="flex gap-3 pt-4 border-t border-border">
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
+        <button
           onClick={onBack}
           disabled={isProcessing}
-          className="flex-1 py-3.5 px-6 border-2 border-border hover:bg-muted hover:border-gold-500/50 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 py-3.5 px-6 border-2 border-border hover:bg-muted hover:border-gold-500/50 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
         >
           <ArrowLeft className="w-4 h-4" />
           Edit
-        </motion.button>
-        <motion.button
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-          onClick={onSubmit}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onSubmit();
+          }}
           disabled={isProcessing}
           className="flex-1 py-3.5 px-6 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 disabled:from-gold-500/70 disabled:to-gold-400/70 disabled:cursor-not-allowed text-navy-900 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-gold-500/20 active:scale-[0.98]"
         >
@@ -291,7 +290,7 @@ export const ReviewStep = ({ data, service, onBack, onSubmit, isProcessing }: Re
               Proceed to Payment
             </>
           )}
-        </motion.button>
+        </button>
       </div>
 
       <p className="text-xs text-center text-muted-foreground">

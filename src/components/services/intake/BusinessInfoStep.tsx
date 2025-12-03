@@ -50,7 +50,7 @@ export const BusinessInfoStep = ({ data, onChange, onNext, onBack }: BusinessInf
         </motion.p>
       </div>
 
-      <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+      <div className="space-y-4 max-h-[50vh] overflow-y-auto px-1 pb-4">
         {/* Business Details */}
         <motion.div custom={0} variants={inputVariants} initial="hidden" animate="visible">
           <Label htmlFor="businessName" className="text-sm font-medium">Business Name *</Label>
