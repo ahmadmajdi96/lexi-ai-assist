@@ -6,7 +6,7 @@ const testimonials = [
     name: "Sarah Mitchell",
     role: "Founder, GreenTech Solutions",
     avatar: "SM",
-    content: "LexCounsel helped us set up our LLC in record time. The AI-generated documents were comprehensive, and the lawyer review gave us peace of mind. Highly recommended!",
+    content: "Ethos Legis Firma helped us set up our LLC in record time. The AI-generated documents were comprehensive, and the lawyer review gave us peace of mind. Highly recommended!",
     rating: 5,
   },
   {
@@ -43,7 +43,7 @@ export function TestimonialsSection() {
             What Our Clients Say
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of satisfied clients who trust LexCounsel 
+            Join thousands of satisfied clients who trust Ethos Legis Firma 
             for their legal needs.
           </p>
         </motion.div>

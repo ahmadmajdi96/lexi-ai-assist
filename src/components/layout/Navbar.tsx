@@ -32,7 +32,7 @@ export function Navbar() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-display text-xl font-bold text-foreground">
-                    LexCounsel
+                    Ethos Legis Firma
                   </span>
                   <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
                     Legal Services

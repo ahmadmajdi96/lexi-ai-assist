@@ -20,8 +20,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    value: "contact@lexcounsel.com",
-    href: "mailto:contact@lexcounsel.com"
+    value: "contact@ethoslegis.com",
+    href: "mailto:contact@ethoslegis.com"
   },
   {
     icon: Phone,

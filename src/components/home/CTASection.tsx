@@ -23,7 +23,7 @@ export function CTASection() {
             Ready to Get Started?
           </h2>
           <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto mb-10">
-            Join thousands of businesses and individuals who trust LexCounsel 
+            Join thousands of businesses and individuals who trust Ethos Legis Firma 
             for their legal needs. Get started today with a free consultation.
           </p>
 
@@ -57,11 +57,11 @@ export function CTASection() {
               <span>+1 (234) 567-890</span>
             </a>
             <a 
-              href="mailto:contact@lexcounsel.com" 
+              href="mailto:contact@ethoslegis.com" 
               className="flex items-center gap-2 text-primary-foreground/80 hover:text-accent transition-colors"
             >
               <MessageSquare className="w-5 h-5" />
-              <span>contact@lexcounsel.com</span>
+              <span>contact@ethoslegis.com</span>
             </a>
           </div>
         </motion.div>

@@ -221,7 +221,7 @@ const HowItWorks = () => {
               Ready to Experience the Future of Legal Services?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Join thousands of satisfied clients who've simplified their legal needs with LexCounsel.
+              Join thousands of satisfied clients who've simplified their legal needs with Ethos Legis Firma.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button variant="hero" size="xl" asChild>

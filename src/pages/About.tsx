@@ -109,7 +109,7 @@ const About = () => {
                 Our Mission
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
-                LexCounsel was founded with a simple yet ambitious mission: to democratize 
+                Ethos Legis Firma was founded with a simple yet ambitious mission: to democratize 
                 access to high-quality legal services. We believe that everyone deserves 
                 professional legal assistance, regardless of their budget or background.
               </p>

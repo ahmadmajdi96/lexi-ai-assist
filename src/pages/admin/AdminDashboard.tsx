@@ -116,7 +116,7 @@ const AdminDashboard = () => {
               <Scale className="w-5 h-5 text-slate-900" />
             </div>
             <div>
-              <span className="font-display text-lg font-bold">LexCounsel</span>
+              <span className="font-display text-lg font-bold">Ethos Legis</span>
               <p className="text-xs text-muted-foreground">Admin Portal</p>
             </div>
           </div>

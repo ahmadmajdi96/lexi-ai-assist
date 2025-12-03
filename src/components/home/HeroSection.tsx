@@ -114,7 +114,7 @@ export function HeroSection() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground italic mb-2">
-                      "LexCounsel transformed how we handle legal matters. Fast, professional, 
+                      "Ethos Legis Firma transformed how we handle legal matters. Fast, professional, 
                       and incredibly efficient."
                     </p>
                     <p className="text-sm font-medium">John Davis</p>

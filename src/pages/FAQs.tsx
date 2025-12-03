@@ -9,8 +9,8 @@ import {
 
 const faqs = [
   {
-    question: "How does LexCounsel work?",
-    answer: "LexCounsel combines AI technology with expert attorney review to create legal documents. You select a service, complete our smart intake form, our AI generates a draft, and then a licensed attorney reviews it before delivery."
+    question: "How does Ethos Legis Firma work?",
+    answer: "Ethos Legis Firma combines AI technology with expert attorney review to create legal documents. You select a service, complete our smart intake form, our AI generates a draft, and then a licensed attorney reviews it before delivery."
   },
   {
     question: "Are the documents created by AI legally valid?",
