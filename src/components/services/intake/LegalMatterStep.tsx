@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Zap, AlertTriangle, Upload, X, FileText, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Zap, AlertTriangle, Upload, X, FileText, Loader2, Check } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -177,7 +177,7 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
         </motion.p>
       </div>
 
-      <div className="space-y-5 max-h-[50vh] overflow-y-auto pr-2">
+      <div className="space-y-5 max-h-[50vh] overflow-y-auto px-1 pb-4">
         {/* Matter Description */}
         <motion.div custom={0} variants={inputVariants} initial="hidden" animate="visible">
           <Label htmlFor="matterDescription" className="text-sm font-medium">
@@ -249,15 +249,18 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 group"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-gold-500/10 border border-gold-500/30 group hover:bg-gold-500/15 transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-gold-500/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-gold-500/20 flex items-center justify-center shrink-0">
                       <FileText className="w-5 h-5 text-gold-500" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{file.name}</p>
                       <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                     </div>
+                    <span className="text-xs text-gold-500 font-medium px-2 py-0.5 bg-gold-500/20 rounded-full">
+                      Uploaded
+                    </span>
                     <button
                       onClick={() => handleRemoveFile(file)}
                       className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
@@ -283,14 +286,17 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
                 <button
                   key={level.value}
                   onClick={() => updateField("urgencyLevel", level.value)}
-                  className={`p-3 rounded-lg border-2 text-center transition-all duration-300 ${
+                  className={`p-3 rounded-lg border-2 text-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
                     isSelected
-                      ? "border-gold-500 bg-gold-500/10"
-                      : "border-border hover:border-gold-500/50"
+                      ? "border-gold-500 bg-gold-500/15 shadow-md shadow-gold-500/20 ring-2 ring-gold-500/30"
+                      : "border-border hover:border-gold-500/50 hover:bg-muted/50 hover:shadow-sm"
                   }`}
                 >
-                  <Icon className={`w-5 h-5 mx-auto mb-1 ${isSelected ? "text-gold-500" : "text-muted-foreground"}`} />
-                  <p className="text-sm font-medium">{level.label}</p>
+                  {isSelected && (
+                    <span className="block text-[10px] text-gold-500 font-bold uppercase tracking-wider mb-1">Selected</span>
+                  )}
+                  <Icon className={`w-5 h-5 mx-auto mb-1 transition-colors ${isSelected ? "text-gold-500" : "text-muted-foreground"}`} />
+                  <p className={`text-sm font-medium ${isSelected ? "text-gold-500" : ""}`}>{level.label}</p>
                   <p className="text-xs text-muted-foreground">{level.description}</p>
                 </button>
               );
@@ -344,19 +350,23 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
         <motion.div custom={6} variants={inputVariants} initial="hidden" animate="visible">
           <Label className="text-sm font-medium mb-3 block">Preferred Communication Method</Label>
           <div className="flex gap-3">
-            {["email", "phone", "both"].map((method) => (
-              <button
-                key={method}
-                onClick={() => updateField("preferredCommunication", method)}
-                className={`flex-1 py-2 px-4 rounded-lg border-2 capitalize text-sm transition-all duration-300 ${
-                  data.preferredCommunication === method
-                    ? "border-gold-500 bg-gold-500/10 text-gold-500"
-                    : "border-border hover:border-gold-500/50"
-                }`}
-              >
-                {method}
-              </button>
-            ))}
+            {["email", "phone", "both"].map((method) => {
+              const isSelected = data.preferredCommunication === method;
+              return (
+                <button
+                  key={method}
+                  onClick={() => updateField("preferredCommunication", method)}
+                  className={`flex-1 py-3 px-4 rounded-lg border-2 capitalize text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                    isSelected
+                      ? "border-gold-500 bg-gold-500/15 text-gold-500 font-semibold shadow-md shadow-gold-500/20 ring-2 ring-gold-500/30"
+                      : "border-border hover:border-gold-500/50 hover:bg-muted/50 hover:shadow-sm"
+                  }`}
+                >
+                  {isSelected && <Check className="w-4 h-4 mx-auto mb-1" />}
+                  {method}
+                </button>
+              );
+            })}
           </div>
         </motion.div>
       </div>

@@ -58,14 +58,23 @@ export const ClientTypeStep = ({ value, onChange, onNext }: ClientTypeStepProps)
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 + 0.2 }}
               onClick={() => onChange(option.type)}
-              className={`relative p-6 rounded-xl border-2 text-left transition-all duration-300 ${
+              className={`relative p-6 rounded-xl border-2 text-left transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] ${
                 isSelected
-                  ? "border-gold-500 bg-gold-500/10 shadow-lg shadow-gold-500/10"
-                  : "border-border hover:border-gold-500/50 hover:bg-muted/50"
+                  ? "border-gold-500 bg-gold-500/15 shadow-lg shadow-gold-500/20 ring-2 ring-gold-500/30"
+                  : "border-border hover:border-gold-500/50 hover:bg-muted/50 hover:shadow-md"
               }`}
             >
+              {isSelected && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute top-3 right-3 bg-gold-500 text-navy-900 text-xs font-bold px-2 py-0.5 rounded-full"
+                >
+                  Selected
+                </motion.div>
+              )}
               <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-lg ${
+                <div className={`p-3 rounded-lg transition-all duration-300 ${
                   isSelected ? "bg-gold-500 text-navy-900" : "bg-muted text-muted-foreground"
                 }`}>
                   <Icon className="w-6 h-6" />
@@ -76,20 +85,20 @@ export const ClientTypeStep = ({ value, onChange, onNext }: ClientTypeStepProps)
                   <ul className="space-y-1">
                     {option.features.map((feature, idx) => (
                       <li key={idx} className="text-xs text-muted-foreground flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-gold-500" : "bg-muted-foreground/50"}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full transition-colors ${isSelected ? "bg-gold-500" : "bg-muted-foreground/50"}`} />
                         {feature}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                   isSelected ? "border-gold-500 bg-gold-500" : "border-muted-foreground/30"
                 }`}>
                   {isSelected && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="w-2 h-2 rounded-full bg-navy-900"
+                      className="w-3 h-3 rounded-full bg-navy-900"
                     />
                   )}
                 </div>
