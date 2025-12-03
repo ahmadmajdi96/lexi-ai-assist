@@ -1,10 +1,14 @@
-import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Zap, AlertTriangle } from "lucide-react";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, ArrowLeft, Clock, Zap, AlertTriangle, Upload, X, FileText, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { LegalMatterInfo, URGENCY_LEVELS } from "./IntakeFormTypes";
+import { LegalMatterInfo, URGENCY_LEVELS, UploadedFile, ALLOWED_FILE_TYPES, MAX_FILE_SIZE, MAX_FILES } from "./IntakeFormTypes";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface LegalMatterStepProps {
   data: LegalMatterInfo;
@@ -15,7 +19,12 @@ interface LegalMatterStepProps {
 }
 
 export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }: LegalMatterStepProps) => {
-  const updateField = (field: keyof LegalMatterInfo, value: string | boolean) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const updateField = (field: keyof LegalMatterInfo, value: string | boolean | UploadedFile[]) => {
     onChange({ ...data, [field]: value });
   };
 
@@ -25,6 +34,118 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
     standard: Clock,
     priority: Zap,
     urgent: AlertTriangle
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (data.uploadedFiles.length + files.length > MAX_FILES) {
+      toast({
+        title: "Too many files",
+        description: `You can upload a maximum of ${MAX_FILES} files.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    const newFiles: UploadedFile[] = [];
+
+    for (const file of Array.from(files)) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: `${file.name} is not a supported file type. Please upload PDF, DOC, DOCX, JPG, PNG, or WEBP files.`,
+          variant: "destructive"
+        });
+        continue;
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "File too large",
+          description: `${file.name} exceeds the 10MB limit.`,
+          variant: "destructive"
+        });
+        continue;
+      }
+
+      try {
+        const timestamp = Date.now();
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+        const filePath = `${user?.id}/${timestamp}_${safeName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("intake-documents")
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        newFiles.push({
+          name: file.name,
+          path: filePath,
+          size: file.size,
+          type: file.type
+        });
+      } catch (error) {
+        console.error("Upload error:", error);
+        toast({
+          title: "Upload failed",
+          description: `Failed to upload ${file.name}. Please try again.`,
+          variant: "destructive"
+        });
+      }
+    }
+
+    if (newFiles.length > 0) {
+      updateField("uploadedFiles", [...data.uploadedFiles, ...newFiles]);
+      updateField("hasExistingDocuments", true);
+      toast({
+        title: "Files uploaded",
+        description: `${newFiles.length} file(s) uploaded successfully.`
+      });
+    }
+
+    setIsUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveFile = async (fileToRemove: UploadedFile) => {
+    try {
+      await supabase.storage
+        .from("intake-documents")
+        .remove([fileToRemove.path]);
+
+      const updatedFiles = data.uploadedFiles.filter(f => f.path !== fileToRemove.path);
+      updateField("uploadedFiles", updatedFiles);
+      
+      if (updatedFiles.length === 0) {
+        updateField("hasExistingDocuments", false);
+      }
+
+      toast({
+        title: "File removed",
+        description: `${fileToRemove.name} has been removed.`
+      });
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove file. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const inputVariants = {
@@ -74,8 +195,84 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
           </p>
         </motion.div>
 
-        {/* Urgency Level */}
+        {/* Document Upload */}
         <motion.div custom={1} variants={inputVariants} initial="hidden" animate="visible">
+          <Label className="text-sm font-medium mb-3 block">Upload Relevant Documents</Label>
+          <div 
+            className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300 ${
+              isUploading ? "border-gold-500 bg-gold-500/5" : "border-border hover:border-gold-500/50 hover:bg-muted/50"
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+              onChange={handleFileSelect}
+              className="hidden"
+              disabled={isUploading}
+            />
+            
+            {isUploading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
+                <p className="text-sm text-muted-foreground">Uploading...</p>
+              </div>
+            ) : (
+              <div 
+                className="flex flex-col items-center gap-2 cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="w-12 h-12 rounded-full bg-gold-500/10 flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-gold-500" />
+                </div>
+                <p className="text-sm font-medium">Click to upload documents</p>
+                <p className="text-xs text-muted-foreground">
+                  PDF, DOC, DOCX, JPG, PNG • Max {MAX_FILES} files • 10MB each
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Uploaded Files List */}
+          <AnimatePresence>
+            {data.uploadedFiles.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3 space-y-2"
+              >
+                {data.uploadedFiles.map((file) => (
+                  <motion.div
+                    key={file.path}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-gold-500/10 flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5 text-gold-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveFile(file)}
+                      className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Urgency Level */}
+        <motion.div custom={2} variants={inputVariants} initial="hidden" animate="visible">
           <Label className="text-sm font-medium mb-3 block">Urgency Level</Label>
           <div className="grid grid-cols-3 gap-3">
             {URGENCY_LEVELS.map((level) => {
@@ -102,7 +299,7 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
         </motion.div>
 
         {/* Opposing Party */}
-        <motion.div custom={2} variants={inputVariants} initial="hidden" animate="visible">
+        <motion.div custom={3} variants={inputVariants} initial="hidden" animate="visible">
           <Label htmlFor="opposingParty" className="text-sm font-medium">
             Opposing Party (if applicable)
           </Label>
@@ -116,7 +313,7 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
         </motion.div>
 
         {/* Relevant Dates */}
-        <motion.div custom={3} variants={inputVariants} initial="hidden" animate="visible">
+        <motion.div custom={4} variants={inputVariants} initial="hidden" animate="visible">
           <Label htmlFor="relevantDates" className="text-sm font-medium">
             Important Dates or Deadlines
           </Label>
@@ -130,7 +327,7 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
         </motion.div>
 
         {/* Additional Notes */}
-        <motion.div custom={4} variants={inputVariants} initial="hidden" animate="visible">
+        <motion.div custom={5} variants={inputVariants} initial="hidden" animate="visible">
           <Label htmlFor="additionalNotes" className="text-sm font-medium">
             Additional Notes
           </Label>
@@ -141,20 +338,6 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
             placeholder="Any other information that might be helpful..."
             className="mt-1.5 min-h-[80px] resize-none"
           />
-        </motion.div>
-
-        {/* Existing Documents */}
-        <motion.div custom={5} variants={inputVariants} initial="hidden" animate="visible">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-            <div>
-              <p className="text-sm font-medium">Do you have existing documents?</p>
-              <p className="text-xs text-muted-foreground">You can upload them after purchase</p>
-            </div>
-            <Switch
-              checked={data.hasExistingDocuments}
-              onCheckedChange={(checked) => updateField("hasExistingDocuments", checked)}
-            />
-          </div>
         </motion.div>
 
         {/* Preferred Communication */}
