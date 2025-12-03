@@ -80,7 +80,7 @@ const Register = () => {
 
     toast({
       title: "Account created!",
-      description: "Welcome to LexCounsel. Let's get started.",
+      description: "Welcome to Ethos Legis Firma. Let's get started.",
     });
 
     navigate("/dashboard");
@@ -110,7 +110,7 @@ const Register = () => {
         >
           <Scale className="w-24 h-24 mx-auto text-accent mb-8" />
           <h2 className="font-display text-3xl font-bold text-primary-foreground mb-4">
-            Join LexCounsel
+            Join Ethos Legis Firma
           </h2>
           <p className="text-primary-foreground/80">
             Get access to professional legal services powered by AI. 
@@ -132,7 +132,7 @@ const Register = () => {
               <Scale className="w-5 h-5 text-slate-900" />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-xl font-bold">LexCounsel</span>
+              <span className="font-display text-xl font-bold">Ethos Legis Firma</span>
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Legal Services
               </span>

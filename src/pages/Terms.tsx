@@ -21,13 +21,13 @@ const Terms = () => {
           <div className="prose prose-slate dark:prose-invert max-w-none">
             <h2 className="font-display text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground mb-6">
-              By accessing and using LexCounsel's services, you agree to be bound by these Terms of Service. 
+              By accessing and using Ethos Legis Firma's services, you agree to be bound by these Terms of Service. 
               If you do not agree to these terms, please do not use our services.
             </p>
 
             <h2 className="font-display text-2xl font-semibold mb-4">2. Description of Services</h2>
             <p className="text-muted-foreground mb-6">
-              LexCounsel provides AI-powered legal document preparation services combined with attorney review. 
+              Ethos Legis Firma provides AI-powered legal document preparation services combined with attorney review. 
               Our services include but are not limited to contract drafting, business formation documents, 
               and legal consultation assistance.
             </p>
@@ -54,18 +54,18 @@ const Terms = () => {
             <h2 className="font-display text-2xl font-semibold mb-4">6. Intellectual Property</h2>
             <p className="text-muted-foreground mb-6">
               Documents created through our service are owned by you, the client. 
-              However, the underlying templates and technology remain the property of LexCounsel.
+              However, the underlying templates and technology remain the property of Ethos Legis Firma.
             </p>
 
             <h2 className="font-display text-2xl font-semibold mb-4">7. Limitation of Liability</h2>
             <p className="text-muted-foreground mb-6">
-              LexCounsel shall not be liable for any indirect, incidental, special, consequential, 
+              Ethos Legis Firma shall not be liable for any indirect, incidental, special, consequential, 
               or punitive damages resulting from your use of our services.
             </p>
 
             <h2 className="font-display text-2xl font-semibold mb-4">8. Contact Us</h2>
             <p className="text-muted-foreground">
-              If you have any questions about these Terms, please contact us at legal@lexcounsel.com.
+              If you have any questions about these Terms, please contact us at legal@ethoslegis.com.
             </p>
           </div>
         </div>

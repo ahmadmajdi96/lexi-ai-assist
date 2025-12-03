@@ -51,7 +51,7 @@ const ForgotPassword = () => {
             <Scale className="w-5 h-5 text-slate-900" />
           </div>
           <div className="flex flex-col">
-            <span className="font-display text-xl font-bold">LexCounsel</span>
+            <span className="font-display text-xl font-bold">Ethos Legis Firma</span>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
               Legal Services
             </span>

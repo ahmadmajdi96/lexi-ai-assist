@@ -66,7 +66,7 @@ const Privacy = () => {
 
             <h2 className="font-display text-2xl font-semibold mb-4">8. Contact Us</h2>
             <p className="text-muted-foreground">
-              For privacy-related inquiries, please contact us at privacy@lexcounsel.com.
+              For privacy-related inquiries, please contact us at privacy@ethoslegis.com.
             </p>
           </div>
         </div>
