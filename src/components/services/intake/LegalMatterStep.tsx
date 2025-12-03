@@ -214,8 +214,11 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
             placeholder="Please provide a detailed description of your legal needs, including any relevant background information..."
             className="mt-1.5 min-h-[120px] resize-none"
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            {data.matterDescription.length}/20 minimum characters
+          <p className={`text-xs mt-1 ${data.matterDescription.length >= 20 ? "text-green-500" : "text-amber-500"}`}>
+            {data.matterDescription.length >= 20 
+              ? `✓ ${data.matterDescription.length} characters (requirement met)`
+              : `${data.matterDescription.length}/20 minimum characters required`
+            }
           </p>
         </motion.div>
 
