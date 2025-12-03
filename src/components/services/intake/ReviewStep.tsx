@@ -267,7 +267,7 @@ export const ReviewStep = ({ data, service, onBack, onSubmit, isProcessing }: Re
           transition={{ delay: 0.4 }}
           onClick={onBack}
           disabled={isProcessing}
-          className="flex-1 py-3 px-6 border border-border hover:bg-muted rounded-xl flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-50"
+          className="flex-1 py-3.5 px-6 border-2 border-border hover:bg-muted hover:border-gold-500/50 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ArrowLeft className="w-4 h-4" />
           Edit
@@ -278,7 +278,7 @@ export const ReviewStep = ({ data, service, onBack, onSubmit, isProcessing }: Re
           transition={{ delay: 0.4 }}
           onClick={onSubmit}
           disabled={isProcessing}
-          className="flex-1 py-3 px-6 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 disabled:from-gold-500/70 disabled:to-gold-400/70 text-navy-900 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-gold-500/20"
+          className="flex-1 py-3.5 px-6 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 disabled:from-gold-500/70 disabled:to-gold-400/70 disabled:cursor-not-allowed text-navy-900 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-gold-500/20 active:scale-[0.98]"
         >
           {isProcessing ? (
             <>

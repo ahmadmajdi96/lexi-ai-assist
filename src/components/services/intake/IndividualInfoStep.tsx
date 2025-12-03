@@ -191,13 +191,13 @@ export const IndividualInfoStep = ({ data, onChange, onNext, onBack }: Individua
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-4 border-t border-border">
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
           onClick={onBack}
-          className="flex-1 py-3 px-6 border border-border hover:bg-muted rounded-xl flex items-center justify-center gap-2 transition-all duration-300"
+          className="flex-1 py-3.5 px-6 border-2 border-border hover:bg-muted hover:border-gold-500/50 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -208,7 +208,7 @@ export const IndividualInfoStep = ({ data, onChange, onNext, onBack }: Individua
           transition={{ delay: 0.3 }}
           onClick={onNext}
           disabled={!isValid}
-          className="flex-1 py-3 px-6 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 disabled:from-muted disabled:to-muted disabled:text-muted-foreground text-navy-900 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-gold-500/20 disabled:shadow-none"
+          className="flex-1 py-3.5 px-6 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 disabled:bg-muted disabled:from-muted disabled:to-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-navy-900 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-gold-500/20 disabled:shadow-none active:scale-[0.98]"
         >
           Continue
           <ArrowRight className="w-4 h-4" />

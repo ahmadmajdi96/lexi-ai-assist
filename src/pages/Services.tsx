@@ -168,9 +168,11 @@ const Services = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="group"
+                    className="group cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <div className="h-full glass-card rounded-2xl p-6 hover:shadow-lg transition-shadow relative">
+                    <div className="h-full glass-card rounded-2xl p-6 hover:shadow-xl hover:shadow-gold-500/10 hover:border-gold-500/30 border-2 border-transparent transition-all duration-300 relative">
                       {service.is_popular && (
                         <Badge className="absolute -top-3 right-6 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-900 border-0">
                           Popular
