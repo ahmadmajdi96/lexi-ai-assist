@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search, Eye, Loader2, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export const AdminOrders = () => {
+  const navigate = useNavigate();
   const { data: purchases, isLoading } = useAllPurchases();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -149,7 +151,11 @@ export const AdminOrders = () => {
                     {new Date(purchase.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => navigate(`/admin/order/${purchase.id}`)}
+                    >
                       <Eye className="w-4 h-4" />
                     </Button>
                   </TableCell>

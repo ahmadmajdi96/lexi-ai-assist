@@ -284,10 +284,41 @@ const PurchaseDetails = () => {
                           </div>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </Button>
+                      {doc.status === "approved" && (
+                        doc.file_path ? (
+                          <Button variant="gold" size="sm" asChild>
+                            <a href={doc.file_path} target="_blank" rel="noopener noreferrer" download>
+                              <Download className="w-4 h-4 mr-2" />
+                              Download
+                            </a>
+                          </Button>
+                        ) : doc.content ? (
+                          <Button 
+                            variant="gold" 
+                            size="sm"
+                            onClick={() => {
+                              const blob = new Blob([doc.content || ''], { type: 'text/plain' });
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${doc.name}.txt`;
+                              a.click();
+                              window.URL.revokeObjectURL(url);
+                            }}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm" disabled>
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </Button>
+                        )
+                      )}
+                      {doc.status !== "approved" && (
+                        <Badge variant="outline">Pending Review</Badge>
+                      )}
                     </div>
                   ))}
                 </div>
