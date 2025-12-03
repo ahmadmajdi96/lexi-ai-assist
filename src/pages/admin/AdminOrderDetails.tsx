@@ -5,24 +5,20 @@ import {
   ArrowLeft,
   FileText,
   User,
-  Clock,
   Upload,
   Sparkles,
   Check,
-  X,
   RefreshCw,
   Download,
   MessageSquare,
   Loader2,
   AlertCircle,
   Eye,
-  Send,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +32,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -45,6 +42,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { MarkdownRenderer } from "@/components/shared/MarkdownRenderer";
+import { DocumentViewerDialog } from "@/components/shared/DocumentViewerDialog";
+import { AIChatMessage } from "@/components/shared/AIChatMessage";
+import { FileUploader } from "@/components/shared/FileUploader";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -79,6 +80,8 @@ const AdminOrderDetails = () => {
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [editedDraft, setEditedDraft] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<any>(null);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
 
   // Fetch purchase details
   const { data: purchase, isLoading: purchaseLoading } = useQuery({
@@ -602,54 +605,48 @@ const AdminOrderDetails = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Service Documents</CardTitle>
-              <div className="flex gap-2">
-                <Button variant="outline" asChild>
-                  <label className="cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
-                    {isUploading ? "Uploading..." : "Upload Document"}
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      disabled={isUploading}
-                    />
-                  </label>
-                </Button>
-              </div>
+              <Button variant="outline" onClick={() => setShowUploadDialog(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Document
+              </Button>
             </CardHeader>
             <CardContent>
               {documents && documents.length > 0 ? (
                 <div className="space-y-3">
                   {documents.map((doc) => (
-                    <div
+                    <motion.div
                       key={doc.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-muted/50"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/50 hover:border-accent/30 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                          <FileText className="w-6 h-6 text-accent" />
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-400 flex items-center justify-center shadow-md">
+                          <FileText className="w-6 h-6 text-slate-900" />
                         </div>
                         <div>
                           <p className="font-medium">{doc.name}</p>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Badge variant="outline">{doc.document_type}</Badge>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            <Badge variant="outline" className="text-xs">{doc.document_type}</Badge>
                             <Badge
                               variant="outline"
-                              className={doc.status === "approved" ? "border-green-500 text-green-600" : ""}
+                              className={`text-xs ${doc.status === "approved" ? "border-green-500 text-green-600 bg-green-500/10" : ""}`}
                             >
                               {doc.status}
                             </Badge>
-                            <span>v{doc.version}</span>
+                            <span className="text-xs">v{doc.version}</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {doc.content && (
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4 mr-2" />
-                            View
-                          </Button>
-                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setViewingDocument(doc)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View
+                        </Button>
                         {doc.file_path && (
                           <Button variant="outline" size="sm" asChild>
                             <a href={doc.file_path} target="_blank" rel="noopener noreferrer">
@@ -659,13 +656,15 @@ const AdminOrderDetails = () => {
                           </Button>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="w-12 h-12 mx-auto mb-4" />
-                  <p>No documents yet. Generate or upload documents.</p>
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+                    <FileText className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground">No documents yet. Generate or upload documents.</p>
                 </div>
               )}
             </CardContent>
@@ -674,9 +673,17 @@ const AdminOrderDetails = () => {
 
         {/* AI Draft Tab */}
         <TabsContent value="ai-draft">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>AI Document Generator</CardTitle>
+          <Card className="overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-muted/50 to-background border-b">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-400 flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-slate-900" />
+                </div>
+                <div>
+                  <CardTitle>AI Document Generator</CardTitle>
+                  <p className="text-sm text-muted-foreground">Powered by advanced AI</p>
+                </div>
+              </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -688,7 +695,7 @@ const AdminOrderDetails = () => {
                   ) : (
                     <Sparkles className="w-4 h-4 mr-2" />
                   )}
-                  {editedDraft ? "Regenerate" : "Generate"} with AI
+                  {editedDraft ? "Regenerate" : "Generate"}
                 </Button>
                 {editedDraft && (
                   <>
@@ -712,37 +719,62 @@ const AdminOrderDetails = () => {
                 )}
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {Object.keys(intakeData).length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <AlertCircle className="w-12 h-12 mx-auto mb-4" />
-                  <p>Client must complete intake form before generating documents.</p>
+                <div className="text-center py-16">
+                  <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Client must complete intake form before generating documents.</p>
                 </div>
               ) : editedDraft ? (
-                <div className="space-y-4">
-                  <Textarea
-                    value={editedDraft}
-                    onChange={(e) => setEditedDraft(e.target.value)}
-                    className="min-h-[500px] font-mono text-sm"
-                    placeholder="AI generated document will appear here..."
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => updateDraft.mutate(editedDraft)}
-                      disabled={updateDraft.isPending}
-                    >
-                      Save Draft
-                    </Button>
-                  </div>
+                <div className="relative">
+                  {/* Preview/Edit Toggle */}
+                  <Tabs defaultValue="preview" className="w-full">
+                    <div className="flex items-center justify-between px-6 py-3 border-b bg-muted/30">
+                      <TabsList className="h-8">
+                        <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                        <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
+                      </TabsList>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateDraft.mutate(editedDraft)}
+                        disabled={updateDraft.isPending}
+                      >
+                        {updateDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Draft"}
+                      </Button>
+                    </div>
+                    <TabsContent value="preview" className="m-0">
+                      <ScrollArea className="h-[500px]">
+                        <div className="p-6">
+                          <div className="prose prose-sm max-w-none bg-white dark:bg-slate-900 rounded-xl p-8 shadow-sm border">
+                            <MarkdownRenderer content={editedDraft} />
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                    <TabsContent value="edit" className="m-0">
+                      <Textarea
+                        value={editedDraft}
+                        onChange={(e) => setEditedDraft(e.target.value)}
+                        className="min-h-[500px] font-mono text-sm border-0 rounded-none focus-visible:ring-0"
+                        placeholder="AI generated document will appear here..."
+                      />
+                    </TabsContent>
+                  </Tabs>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Sparkles className="w-12 h-12 mx-auto text-accent mb-4" />
-                  <h3 className="font-semibold mb-2">Ready to Generate</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Click "Generate with AI" to create a document based on the intake data.
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-500/20 to-yellow-400/20 flex items-center justify-center mb-4">
+                    <Sparkles className="w-10 h-10 text-amber-500" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">Ready to Generate</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Click "Generate" to create a professional document based on the client's intake data.
                   </p>
+                  <Button onClick={() => handleGenerateAI()} disabled={isGenerating}>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate Document
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -752,39 +784,35 @@ const AdminOrderDetails = () => {
         {/* Messages Tab */}
         <TabsContent value="messages">
           <Card>
-            <CardHeader>
-              <CardTitle>Client Messages</CardTitle>
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Client Messages
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[400px]">
-                {messages && messages.length > 0 ? (
-                  <div className="space-y-4">
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                            msg.role === "user"
-                              ? "bg-accent text-accent-foreground"
-                              : "bg-muted"
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                          <span className="text-xs opacity-70 mt-1 block">
-                            {new Date(msg.created_at).toLocaleString()}
-                          </span>
-                        </div>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[450px]">
+                <div className="p-6">
+                  {messages && messages.length > 0 ? (
+                    <div className="space-y-4">
+                      {messages.map((msg) => (
+                        <AIChatMessage
+                          key={msg.id}
+                          role={msg.role as "user" | "assistant"}
+                          content={msg.content}
+                          timestamp={msg.created_at}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+                        <MessageSquare className="w-8 h-8 text-muted-foreground" />
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-4" />
-                    <p>No messages yet.</p>
-                  </div>
-                )}
+                      <p className="text-muted-foreground">No messages yet.</p>
+                    </div>
+                  )}
+                </div>
               </ScrollArea>
             </CardContent>
           </Card>
@@ -811,11 +839,11 @@ const AdminOrderDetails = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Request AI Changes</DialogTitle>
+            <DialogDescription>
+              Describe the changes you want the AI to make to the document.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Describe the changes you want the AI to make to the document.
-            </p>
             <Textarea
               value={aiPromptFeedback}
               onChange={(e) => setAiPromptFeedback(e.target.value)}
@@ -837,6 +865,43 @@ const AdminOrderDetails = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Upload Dialog */}
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Document</DialogTitle>
+            <DialogDescription>
+              Upload a file to attach to this order.
+            </DialogDescription>
+          </DialogHeader>
+          <FileUploader
+            bucket="intake-documents"
+            folder={`orders/${id}`}
+            maxFiles={5}
+            maxSizeMB={10}
+            onUploadComplete={async (files) => {
+              if (files.length > 0) {
+                const latestFile = files[files.length - 1];
+                await createDocument.mutateAsync({
+                  name: latestFile.name,
+                  file_path: latestFile.url,
+                  document_type: "uploaded",
+                  status: "pending",
+                });
+                setShowUploadDialog(false);
+              }
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Viewer Dialog */}
+      <DocumentViewerDialog
+        isOpen={!!viewingDocument}
+        onClose={() => setViewingDocument(null)}
+        document={viewingDocument}
+      />
     </div>
   );
 };
