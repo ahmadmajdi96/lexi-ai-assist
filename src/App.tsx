@@ -18,6 +18,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import PurchaseDetails from "./pages/PurchaseDetails";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import FAQs from "./pages/FAQs";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/purchase/:id" element={<PurchaseDetails />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/order/:id" element={<AdminOrderDetails />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/faqs" element={<FAQs />} />

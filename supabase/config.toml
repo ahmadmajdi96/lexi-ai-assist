@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.service-chat]
 verify_jwt = false
+
+[functions.generate-document]
+verify_jwt = false
