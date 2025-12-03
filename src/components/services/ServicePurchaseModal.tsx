@@ -161,7 +161,7 @@ export const ServicePurchaseModal = ({ service, isOpen, onClose }: ServicePurcha
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-[calc(100%-2rem)] max-w-2xl max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col m-4"
+            className="relative w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col m-4"
           >
             {/* Header */}
             <div className="relative bg-gradient-to-r from-navy-900 to-navy-800 p-6 text-white shrink-0">

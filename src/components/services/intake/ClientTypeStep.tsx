@@ -104,7 +104,7 @@ export const ClientTypeStep = ({ value, onChange, onNext }: ClientTypeStepProps)
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         onClick={onNext}
-        className="w-full mt-6 py-4 px-6 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-navy-900 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-gold-500/20 hover:shadow-gold-500/30"
+        className="w-full mt-6 py-4 px-6 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-navy-900 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-gold-500/20 hover:shadow-gold-500/30 active:scale-[0.98]"
       >
         Continue
         <ArrowRight className="w-5 h-5" />

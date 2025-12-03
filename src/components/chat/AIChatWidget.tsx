@@ -4,6 +4,7 @@ import { MessageSquare, X, Send, Bot, User, Loader2, Minimize2 } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MarkdownRenderer } from "@/components/shared/MarkdownRenderer";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -219,7 +220,15 @@ export function AIChatWidget() {
                               : "bg-muted rounded-bl-md"
                           )}
                         >
-                          {message.content || (
+                          {message.content ? (
+                            message.role === "assistant" ? (
+                              <div className="prose prose-sm dark:prose-invert max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-1">
+                                <MarkdownRenderer content={message.content} />
+                              </div>
+                            ) : (
+                              <span className="whitespace-pre-wrap">{message.content}</span>
+                            )
+                          ) : (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           )}
                         </div>
