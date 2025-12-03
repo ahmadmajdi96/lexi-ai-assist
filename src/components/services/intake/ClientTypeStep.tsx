@@ -64,15 +64,6 @@ export const ClientTypeStep = ({ value, onChange, onNext }: ClientTypeStepProps)
                   : "border-border hover:border-gold-500/50 hover:bg-muted/50 hover:shadow-md"
               }`}
             >
-              {isSelected && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="absolute top-3 right-3 bg-gold-500 text-navy-900 text-xs font-bold px-2 py-0.5 rounded-full"
-                >
-                  Selected
-                </motion.div>
-              )}
               <div className="flex items-start gap-4">
                 <div className={`p-3 rounded-lg transition-all duration-300 ${
                   isSelected ? "bg-gold-500 text-navy-900" : "bg-muted text-muted-foreground"

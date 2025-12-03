@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Zap, AlertTriangle, Upload, X, FileText, Loader2, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Zap, AlertTriangle, Upload, X, FileText, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,15 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    if (!user) {
+      toast({
+        title: "Not authenticated",
+        description: "Please sign in to upload files.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (data.uploadedFiles.length + files.length > MAX_FILES) {
       toast({
         title: "Too many files",
@@ -51,6 +60,18 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
 
     setIsUploading(true);
     const newFiles: UploadedFile[] = [];
+
+    // Refresh session to ensure token is valid
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      toast({
+        title: "Session expired",
+        description: "Please sign in again to upload files.",
+        variant: "destructive"
+      });
+      setIsUploading(false);
+      return;
+    }
 
     for (const file of Array.from(files)) {
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
@@ -74,11 +95,14 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
       try {
         const timestamp = Date.now();
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const filePath = `${user?.id}/${timestamp}_${safeName}`;
+        const filePath = `${user.id}/${timestamp}_${safeName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("intake-documents")
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
         if (uploadError) {
           throw uploadError;
@@ -292,10 +316,14 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
                       : "border-border hover:border-gold-500/50 hover:bg-muted/50 hover:shadow-sm"
                   }`}
                 >
-                  {isSelected && (
-                    <span className="block text-[10px] text-gold-500 font-bold uppercase tracking-wider mb-1">Selected</span>
-                  )}
-                  <Icon className={`w-5 h-5 mx-auto mb-1 transition-colors ${isSelected ? "text-gold-500" : "text-muted-foreground"}`} />
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                      isSelected ? "border-gold-500 bg-gold-500" : "border-muted-foreground/50"
+                    }`}>
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-navy-900" />}
+                    </div>
+                    <Icon className={`w-5 h-5 transition-colors ${isSelected ? "text-gold-500" : "text-muted-foreground"}`} />
+                  </div>
                   <p className={`text-sm font-medium ${isSelected ? "text-gold-500" : ""}`}>{level.label}</p>
                   <p className="text-xs text-muted-foreground">{level.description}</p>
                 </button>
@@ -358,12 +386,18 @@ export const LegalMatterStep = ({ data, onChange, serviceName, onNext, onBack }:
                   onClick={() => updateField("preferredCommunication", method)}
                   className={`flex-1 py-3 px-4 rounded-lg border-2 capitalize text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
                     isSelected
-                      ? "border-gold-500 bg-gold-500/15 text-gold-500 font-semibold shadow-md shadow-gold-500/20 ring-2 ring-gold-500/30"
+                      ? "border-gold-500 bg-gold-500/15 font-semibold shadow-md shadow-gold-500/20 ring-2 ring-gold-500/30"
                       : "border-border hover:border-gold-500/50 hover:bg-muted/50 hover:shadow-sm"
                   }`}
                 >
-                  {isSelected && <Check className="w-4 h-4 mx-auto mb-1" />}
-                  {method}
+                  <div className="flex items-center justify-center gap-2">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                      isSelected ? "border-gold-500 bg-gold-500" : "border-muted-foreground/50"
+                    }`}>
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-navy-900" />}
+                    </div>
+                    <span className={isSelected ? "text-gold-500" : ""}>{method}</span>
+                  </div>
                 </button>
               );
             })}
