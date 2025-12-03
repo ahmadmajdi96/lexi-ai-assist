@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, User, Building2, FileText, Shield, CreditCard, Check, Mail, Phone, MapPin, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Loader2, User, Building2, FileText, Shield, CreditCard, Check, Mail, Phone, MapPin, Calendar, Clock, Paperclip } from "lucide-react";
 import { IntakeFormData, URGENCY_LEVELS } from "./IntakeFormTypes";
 
 interface Service {
@@ -222,10 +222,19 @@ export const ReviewStep = ({ data, service, onBack, onSubmit, isProcessing }: Re
                 <p className="font-medium">{data.legalMatter.relevantDates}</p>
               </div>
             )}
-            {data.legalMatter.hasExistingDocuments && (
-              <div className="flex items-center gap-2 text-gold-500">
-                <Check className="w-4 h-4" />
-                <span className="text-sm">Has existing documents to upload</span>
+            {data.legalMatter.uploadedFiles && data.legalMatter.uploadedFiles.length > 0 && (
+              <div className="pt-2 border-t border-border">
+                <span className="text-muted-foreground text-xs flex items-center gap-1 mb-2">
+                  <Paperclip className="w-3 h-3" /> Attached Documents ({data.legalMatter.uploadedFiles.length})
+                </span>
+                <div className="space-y-1.5">
+                  {data.legalMatter.uploadedFiles.map((file) => (
+                    <div key={file.path} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                      <FileText className="w-4 h-4 text-gold-500 shrink-0" />
+                      <span className="text-sm truncate">{file.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

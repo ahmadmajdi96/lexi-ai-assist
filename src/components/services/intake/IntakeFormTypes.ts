@@ -29,6 +29,13 @@ export interface BusinessInfo {
   authorizedRepPhone: string;
 }
 
+export interface UploadedFile {
+  name: string;
+  path: string;
+  size: number;
+  type: string;
+}
+
 export interface LegalMatterInfo {
   matterDescription: string;
   urgencyLevel: string;
@@ -37,6 +44,7 @@ export interface LegalMatterInfo {
   additionalNotes: string;
   hasExistingDocuments: boolean;
   preferredCommunication: string;
+  uploadedFiles: UploadedFile[];
 }
 
 export interface IntakeFormData {
@@ -83,6 +91,7 @@ export const initialLegalMatterInfo: LegalMatterInfo = {
   additionalNotes: "",
   hasExistingDocuments: false,
   preferredCommunication: "email",
+  uploadedFiles: [],
 };
 
 export const initialIntakeFormData: IntakeFormData = {
@@ -128,3 +137,15 @@ export const URGENCY_LEVELS = [
   { value: "priority", label: "Priority", description: "Expedited review (additional fees may apply)" },
   { value: "urgent", label: "Urgent", description: "Same-day attention required" }
 ];
+
+export const ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+  "image/webp"
+];
+
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+export const MAX_FILES = 5;
