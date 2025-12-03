@@ -151,11 +151,10 @@ const AdminOrderDetails = () => {
           completed_at: status === "completed" ? new Date().toISOString() : null
         })
         .eq("id", id)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      return data?.[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-purchase", id] });
@@ -173,11 +172,10 @@ const AdminOrderDetails = () => {
         .from("purchases")
         .update({ ai_draft })
         .eq("id", id)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      return data?.[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-purchase", id] });
@@ -195,11 +193,10 @@ const AdminOrderDetails = () => {
           purchase_id: id,
           user_id: purchase?.user_id,
         })
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      return data?.[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-service-documents", id] });
