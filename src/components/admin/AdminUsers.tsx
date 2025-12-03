@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MoreVertical, Mail, Shield, User, Loader2 } from "lucide-react";
+import { Search, MoreVertical, Mail, Shield, User, Loader2, UserPlus, Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAllUsers, useUpdateUserRole } from "@/hooks/useAdmin";
+import { toast } from "sonner";
 
 const roleColors: Record<string, string> = {
   admin: "bg-red-500/20 text-red-600",
@@ -30,6 +39,10 @@ export const AdminUsers = () => {
   const { data: users, isLoading } = useAllUsers();
   const updateRole = useUpdateUserRole();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const signupUrl = `${window.location.origin}/register`;
 
   const filteredUsers = users?.filter((user: any) =>
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -39,6 +52,17 @@ export const AdminUsers = () => {
 
   const handleRoleChange = (userId: string, role: "client" | "lawyer" | "admin") => {
     updateRole.mutate({ userId, role });
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(signupUrl);
+      setCopied(true);
+      toast.success("Signup link copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy link");
+    }
   };
 
   return (
@@ -51,10 +75,46 @@ export const AdminUsers = () => {
             Manage users and their roles.
           </p>
         </div>
-        <Button variant="gold">
-          <User className="w-4 h-4 mr-2" />
-          Add User
-        </Button>
+        <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+          <DialogTrigger asChild>
+            <Button variant="gold">
+              <UserPlus className="w-4 h-4 mr-2" />
+              Add User
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Invite New User</DialogTitle>
+              <DialogDescription>
+                Share the registration link with the new user. Once they sign up, you can assign their role.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-2">
+                <Input
+                  value={signupUrl}
+                  readOnly
+                  className="flex-1 font-mono text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCopyLink}
+                  className="shrink-0"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                After the user registers, they will appear in this list. You can then change their role using the actions menu.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search */}
@@ -113,8 +173,8 @@ export const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={roleColors[user.user_roles?.[0]?.role || "client"]}>
-                      {user.user_roles?.[0]?.role || "client"}
+                    <Badge className={roleColors[user.role || "client"]}>
+                      {user.role || "client"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
